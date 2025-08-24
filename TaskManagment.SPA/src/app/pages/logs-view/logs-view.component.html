@@ -1,0 +1,45 @@
+<div class="card shadow-sm">
+  <div class="card-header d-flex flex-wrap align-items-center gap-2">
+    <h5 class="mb-0 me-auto">All Logs</h5>
+
+    <select class="form-select w-auto" [(ngModel)]="level" (ngModelChange)="reload()">
+      <option value="">All</option>
+      <option value="INF">Info</option>
+      <option value="WRN">Warning</option>
+      <option value="ERR">Error</option>
+    </select>
+
+    <input class="form-control w-auto" style="min-width:260px"
+           [(ngModel)]="q" (keyup.enter)="reload()" placeholder="Search text…" />
+
+    <select class="form-select w-auto" [(ngModel)]="last" (ngModelChange)="reload()">
+      <option [ngValue]="100">Last 100</option>
+      <option [ngValue]="200">Last 200</option>
+      <option [ngValue]="500">Last 500</option>
+      <option [ngValue]="1000">Last 1000</option>
+    </select>
+
+    <button class="btn btn-outline-secondary" (click)="reload()">
+      {{ loading ? 'Loading…' : 'Refresh' }}
+    </button>
+  </div>
+
+  <div class="list-group list-group-flush">
+    <div *ngFor="let x of rows; trackBy: trackByIdx" class="list-group-item">
+      <span class="badge me-2" [class]="badgeClass(x.level)">{{ (x.level || 'INF') }}</span>
+      <code class="text-muted me-2">{{ x.time || '' }}</code>
+      <span class="fw-semibold">{{ x.message }}</span>
+      <small class="text-muted ms-2" *ngIf="x.path"> {{ x.path }} </small>
+      <small class="text-muted ms-2" *ngIf="x.source"> ({{ x.source }}) </small>
+
+      <details *ngIf="x.exception" class="mt-2">
+        <summary>Exception</summary>
+        <pre class="mb-0">{{ x.exception }}</pre>
+      </details>
+    </div>
+
+    <div class="list-group-item text-muted" *ngIf="!rows.length && !loading">
+      No logs found.
+    </div>
+  </div>
+</div>

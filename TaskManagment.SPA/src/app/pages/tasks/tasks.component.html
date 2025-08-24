@@ -1,0 +1,184 @@
+<div class="row">
+
+  <!-- Create Task (Admin) -->
+  <div class="col-md-5" *ngIf="isAdmin">
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title">Create Task (Admin)</h5>
+
+        <form #f="ngForm" (ngSubmit)="create(f)" novalidate>
+          <!-- Title -->
+          <div class="mb-2">
+            <label class="form-label">Title</label>
+            <input class="form-control"
+                   name="title"
+                   [(ngModel)]="form.title"
+                   required
+                   maxlength="100"
+                   #title="ngModel"
+                   [class.is-invalid]="f.submitted && title.invalid">
+            <div class="invalid-feedback" *ngIf="f.submitted && title.errors?.['required']">
+              Title is required.
+            </div>
+            <div class="invalid-feedback" *ngIf="title.errors?.['maxlength'] && (title.dirty || f.submitted)">
+              Max 100 characters.
+            </div>
+          </div>
+
+          <!-- Description (optional) -->
+          <div class="mb-2">
+            <label class="form-label">Description</label>
+            <textarea class="form-control"
+                      name="description"
+                      [(ngModel)]="form.description"
+                      maxlength="1000"
+                      #desc="ngModel"
+                      [class.is-invalid]="desc.errors?.['maxlength'] && (desc.dirty || f.submitted)"></textarea>
+            <div class="invalid-feedback" *ngIf="desc.errors?.['maxlength'] && (desc.dirty || f.submitted)">
+              Max 1000 characters.
+            </div>
+          </div>
+
+          <!-- Assigned User (required) -->
+          <div class="mb-2">
+            <label class="form-label">Assigned User</label>
+            <select class="form-select"
+                    name="assignedUserId"
+                    [(ngModel)]="form.assignedUserId"
+                    required
+                    #assigned="ngModel"
+                    [class.is-invalid]="f.submitted && assigned.invalid">
+              <option value="" disabled>Select a user</option>
+              <option *ngFor="let u of users" [ngValue]="u.id">
+                {{ u.fullName || u.email }} ({{ u.email }})
+              </option>
+            </select>
+            <div class="form-text">Use seeded users or newly created ones.</div>
+            <div class="invalid-feedback" *ngIf="f.submitted && assigned.errors?.['required']">
+              Please select a user.
+            </div>
+          </div>
+
+          <!-- Status (required; default New) -->
+          <div class="mb-3">
+            <label class="form-label">Status</label>
+            <select class="form-select"
+                    name="status"
+                    [(ngModel)]="form.status"
+                    required
+                    #status="ngModel"
+                    [class.is-invalid]="f.submitted && status.invalid">
+              <option [ngValue]="TaskStatus.New">New</option>
+              <option [ngValue]="TaskStatus.InProgress">InProgress</option>
+              <option [ngValue]="TaskStatus.Done">Done</option>
+            </select>
+            <div class="invalid-feedback" *ngIf="f.submitted && status.errors?.['required']">
+              Status is required.
+            </div>
+          </div>
+
+          <button class="btn btn-primary" type="submit" [disabled]="f.invalid">Create</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Tasks</h5>
+        <div *ngIf="error" class="alert alert-danger">{{error}}</div>
+
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Status</th>
+              <th>Assigned</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let t of tasks">
+              <td>
+                <div class="fw-semibold">{{t.title}}</div>
+                <div class="small text-muted">{{t.description}}</div>
+              </td>
+              <td>
+                <span class="badge"
+                      [class.bg-secondary]="t.status===TaskStatus.New"
+                      [class.bg-info]="t.status===TaskStatus.InProgress"
+                      [class.bg-success]="t.status===TaskStatus.Done">
+                  {{ TaskStatus[t.status] }}
+                </span>
+              </td>
+              <td>{{ assignedLabel(t) }}</td>
+              <td class="text-end">
+                <div class="btn-group btn-group-sm">
+                  <button class="btn btn-outline-secondary" (click)="setStatus(t, TaskStatus.New)">New</button>
+                  <button class="btn btn-outline-secondary" (click)="setStatus(t, TaskStatus.InProgress)">InProgress</button>
+                  <button class="btn btn-outline-secondary" (click)="setStatus(t, TaskStatus.Done)">Done</button>
+                  <button *ngIf="isAdmin" class="btn btn-outline-primary" (click)="openEdit(t)">Edit</button>
+                  <button *ngIf="isAdmin" class="btn btn-outline-danger" (click)="remove(t.id)">Delete</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="editTaskModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <form [formGroup]="editForm" (ngSubmit)="saveEdit()">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Task</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Title</label>
+            <input class="form-control" formControlName="title">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" formControlName="description" rows="3"></textarea>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Assigned User</label>
+              <select class="form-select" formControlName="assignedUserId">
+                <option *ngFor="let u of users" [ngValue]="u.id">
+                  {{ u.fullName || u.email }} ({{u.email}})
+                </option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Status</label>
+              <select class="form-select" formControlName="status">
+                <option [ngValue]="TaskStatus.New">New</option>
+                <option [ngValue]="TaskStatus.InProgress">InProgress</option>
+                <option [ngValue]="TaskStatus.Done">Done</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary" type="submit" [disabled]="editForm.invalid">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

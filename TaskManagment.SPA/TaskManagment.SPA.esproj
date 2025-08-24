@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/1.0.2752196">
+  <ItemGroup>
+    <Folder Include="src\app\core\" />
+    <Folder Include="src\app\models\" />
+    <Folder Include="src\app\services\" />
+    <Folder Include="src\app\pages\" />
+  </ItemGroup>
+</Project>

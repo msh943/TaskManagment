@@ -1,0 +1,9 @@
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1080">
+  <div *ngFor="let t of items" class="toast show border-0 shadow" [ngClass]="bgClass(t)">
+    <div class="toast-header" *ngIf="t.title">
+      <strong class="me-auto">{{ t.title }}</strong>
+      <button class="btn-close ms-2 mb-1" (click)="close(t)"></button>
+    </div>
+    <div class="toast-body">{{ t.text }}</div>
+  </div>
+</div>

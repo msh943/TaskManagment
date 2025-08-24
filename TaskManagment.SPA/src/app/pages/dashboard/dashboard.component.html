@@ -1,0 +1,156 @@
+
+
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4" *ngIf="isAdmin">
+    <div class="card text-bg-light">
+      <div class="card-body">
+        <div class="fw-semibold text-secondary">Total Users</div>
+        <div class="display-6">{{ totalUsers ?? '—' }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4" *ngIf="isAdmin">
+    <div class="card text-bg-light">
+      <div class="card-body">
+        <div class="fw-semibold text-secondary">Total Tasks</div>
+        <div class="display-6">{{ totalTasks ?? '—' }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4" *ngIf="!isAdmin && myTasksCount !== undefined">
+    <div class="card text-bg-light">
+      <div class="card-body">
+        <div class="fw-semibold text-secondary">My Tasks</div>
+        <div class="display-6">{{ myTasksCount }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div *ngIf="!isAdmin" class="alert alert-info">
+  Welcome! Use the Tasks page to view and update the status of your assigned tasks.
+</div>
+
+
+<div *ngIf="isAdmin" class="row g-4">
+  <div class="col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Create User</h5>
+
+        <form [formGroup]="userForm" (ngSubmit)="createUser()" novalidate>
+          <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <input class="form-control" formControlName="fullName" [class.is-invalid]="submitted && fullName.invalid">
+            <div class="invalid-feedback" *ngIf="submitted && fullName.errors">
+              <span *ngIf="fullName.errors['required']">Full name is required.</span>
+              <span *ngIf="fullName.errors['minlength']">Min 2 characters.</span>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input class="form-control" type="email" formControlName="email" [class.is-invalid]="submitted && email.invalid">
+            <div class="invalid-feedback" *ngIf="submitted && email.errors">
+              <span *ngIf="email.errors['required']">Email is required.</span>
+              <span *ngIf="email.errors['email']">Invalid email.</span>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input class="form-control" type="password" formControlName="password" [class.is-invalid]="submitted && password.invalid">
+            <div class="invalid-feedback" *ngIf="submitted && password.errors">
+              <span *ngIf="password.errors['required']">Password is required.</span>
+              <span *ngIf="password.errors['minlength']">Min 6 characters.</span>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Role</label>
+            <select class="form-select" formControlName="role">
+              <option>User</option>
+              <option>Admin</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary" type="submit">Create User</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between">
+          <h5 class="card-title mb-0">Users</h5>
+          <button class="btn btn-sm btn-outline-secondary" (click)="loadUsers()">Refresh</button>
+        </div>
+
+        <div class="table-responsive mt-3" *ngIf="!loadingUsers">
+          <table class="table table-striped align-middle mb-0">
+            <thead>
+              <tr><th>Email</th><th>Name</th><th>Role</th><th class="text-end">Actions</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let u of users">
+                <td>{{u.email}}</td>
+                <td>{{u.fullName}}</td>
+                <td><span class="badge bg-secondary">{{u.role}}</span></td>
+
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-primary" (click)="openEditUser(u)">Edit</button>
+                    <button class="btn btn-outline-danger" (click)="deleteUser(u.id)">Delete</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="users.length===0"><td colspan="4" class="text-center text-muted py-3">No users yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div *ngIf="loadingUsers" class="mt-3">Loading users…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form [formGroup]="editUserForm" (ngSubmit)="saveEditUser()">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit User</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <input class="form-control" formControlName="fullName">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input class="form-control" formControlName="email" type="email">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Role</label>
+            <select class="form-select" formControlName="role">
+              <option>User</option>
+              <option>Admin</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary" type="submit" [disabled]="editUserForm.invalid">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
