@@ -76,7 +76,7 @@ builder.Host.UseSerilog((ctx, lc) =>
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("con"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 builder.Services.AddIdentity<AppUser, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
 
@@ -117,12 +117,30 @@ builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
 app.UseCors("spa");
-await DataSeeder.SeedAsync(app.Services);
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
+    await DataSeeder.SeedAsync(app.Services);
+}
+
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseSwagger();
+//    app.UseSwaggerUI();
+//}
+
+var enableSwagger = app.Configuration.GetValue<bool>("Swagger:Enabled");
+if (enableSwagger)
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(o =>
+    {
+        o.SwaggerEndpoint("/swagger/v1/swagger.json", "HappyWarehouse API v1");
+        o.RoutePrefix = "swagger";
+        o.DisplayRequestDuration();
+    });
 }
 
 

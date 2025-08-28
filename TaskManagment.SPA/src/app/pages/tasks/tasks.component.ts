@@ -5,7 +5,6 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, NgForm, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UserDto } from '../../models/user-dto.dto';
 import { UsersService } from '../../services/users.service';
-import { Modal } from 'bootstrap';
 import { ToastService } from '../../services/toast.service';
 import { TaskCreateDto } from '../../models/task-create-dto.dto';
 import { TaskDto } from '../../models/task-dto.dto';
@@ -130,8 +129,9 @@ export class TasksComponent implements OnInit {
       status: t.status,
       assignedUserId: t.assignedUserId
     });
-    const el = document.getElementById('editTaskModal') as HTMLElement;
-    Modal.getOrCreateInstance(el).show();
+    const el = document.getElementById('editTaskModal')!;
+    const modal = (window as any).bootstrap.Modal.getOrCreateInstance(el);
+    modal.show();
   }
 
   saveEdit() {
@@ -145,8 +145,9 @@ export class TasksComponent implements OnInit {
         const i = this.tasks.findIndex(x => x.id === updated.id);
         if (i > -1) this.tasks[i] = updated;
         this.toasts.success('Task updated');
-        const el = document.getElementById('editTaskModal') as HTMLElement;
-        Modal.getInstance(el)?.hide();
+        const el = document.getElementById('editTaskModal')!;
+        const modal = (window as any).bootstrap.Modal.getOrCreateInstance(el);
+        modal.show();
         this.editingId = null;
       }
     });

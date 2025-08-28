@@ -7,7 +7,7 @@ import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angu
 import { RouterLink } from '@angular/router';
 import { ToastService } from '../../services/toast.service';
 import { TasksService } from '../../services/tasks.service';
-import { Modal } from 'bootstrap';
+
 
 
 declare const bootstrap: any;
@@ -117,8 +117,9 @@ export class DashboardComponent implements OnInit {
       email: u.email,
       role: u.role || 'User'
     });
-    const el = document.getElementById('editUserModal') as HTMLElement;
-    Modal.getOrCreateInstance(el).show();
+    const el = document.getElementById('editTaskModal')!;
+    const modal = (window as any).bootstrap.Modal.getOrCreateInstance(el);
+    modal.show();
   }
 
   saveEditUser() {
@@ -132,8 +133,9 @@ export class DashboardComponent implements OnInit {
         const i = this.users.findIndex(x => x.id === updated.id);
         if (i > -1) this.users[i] = updated;
         this.toasts.success('User updated.');
-        const el = document.getElementById('editUserModal') as HTMLElement;
-        Modal.getInstance(el)?.hide();
+        const el = document.getElementById('editTaskModal')!;
+        const modal = (window as any).bootstrap.Modal.getOrCreateInstance(el);
+        modal.show();
         this.refreshStats();
       }
     });
